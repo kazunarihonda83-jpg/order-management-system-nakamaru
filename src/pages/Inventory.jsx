@@ -190,6 +190,24 @@ export default function Inventory() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (!confirm('本当に全ての在庫データを削除しますか？この操作は取り消せません。')) return;
+    
+    // 二重確認
+    if (!confirm('最終確認：全ての在庫データ、移動履歴、アラートが削除されます。続けますか？')) return;
+    
+    try {
+      await api.delete('/inventory/bulk-delete');
+      alert('在庫データを全て削除しました');
+      fetchInventory();
+      fetchStats();
+      fetchAlerts();
+    } catch (error) {
+      console.error('Error bulk deleting inventory:', error);
+      alert('一括削除に失敗しました');
+    }
+  };
+
   const openMovementModal = (item) => {
     setSelectedItem(item);
     setMovementData({ 
@@ -223,10 +241,16 @@ export default function Inventory() {
     <div style={{ padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>在庫管理</h1>
-        <button onClick={() => { setSelectedItem(null); setShowModal(true); }}
-          style={{ padding: '10px 20px', background: '#1890ff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Plus size={16} /> 新規登録
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={handleBulkDelete}
+            style={{ padding: '10px 20px', background: '#ff4d4f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Trash2 size={16} /> 全データ削除
+          </button>
+          <button onClick={() => { setSelectedItem(null); setShowModal(true); }}
+            style={{ padding: '10px 20px', background: '#1890ff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Plus size={16} /> 新規登録
+          </button>
+        </div>
       </div>
 
       {/* 統計カード */}

@@ -393,4 +393,38 @@ function checkStockAlerts(inventoryId) {
   }
 }
 
+// 在庫データ一括削除エンドポイント
+router.delete('/bulk-delete', (req, res) => {
+  try {
+    // トランザクション開始
+    db.prepare('BEGIN TRANSACTION').run();
+    
+    try {
+      // 在庫移動履歴を削除
+      db.prepare('DELETE FROM inventory_movements').run();
+      
+      // 在庫アラートを削除
+      db.prepare('DELETE FROM stock_alerts').run();
+      
+      // 在庫データを削除
+      const result = db.prepare('DELETE FROM inventory').run();
+      
+      // トランザクションコミット
+      db.prepare('COMMIT').run();
+      
+      res.json({ 
+        message: '在庫データを全て削除しました',
+        deleted_count: result.changes 
+      });
+    } catch (error) {
+      // エラー時はロールバック
+      db.prepare('ROLLBACK').run();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error bulk deleting inventory:', error);
+    res.status(500).json({ error: '在庫データの一括削除に失敗しました' });
+  }
+});
+
 export default router;
