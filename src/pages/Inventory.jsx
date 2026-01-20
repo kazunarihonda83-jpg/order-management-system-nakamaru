@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Package, AlertTriangle, TrendingUp, TrendingDown, Calendar, MapPin, Edit, Trash2, Plus, Filter } from 'lucide-react';
+import { Package, AlertTriangle, TrendingUp, TrendingDown, Calendar, MapPin, Edit, Trash2, Plus, Filter, X } from 'lucide-react';
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([]);
@@ -180,6 +180,16 @@ export default function Inventory() {
     }
   };
 
+  const handleDismissAlert = async (alertId) => {
+    try {
+      await api.put(`/inventory/alerts/${alertId}/resolve`);
+      fetchAlerts();
+    } catch (error) {
+      console.error('Error dismissing alert:', error);
+      alert('アラートの解決に失敗しました');
+    }
+  };
+
   const openMovementModal = (item) => {
     setSelectedItem(item);
     setMovementData({ 
@@ -260,9 +270,45 @@ export default function Inventory() {
             <AlertTriangle size={18} color="#faad14" />
             在庫アラート ({alerts.length}件)
           </h3>
-          {alerts.slice(0, 3).map(alert => (
-            <div key={alert.id} style={{ padding: '8px 0', borderBottom: '1px solid #ffd591' }}>
-              {alert.message}
+          {alerts.slice(0, 5).map(alert => (
+            <div key={alert.id} style={{ 
+              padding: '10px', 
+              borderBottom: '1px solid #ffd591',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <span style={{ flex: 1 }}>{alert.message}</span>
+              <button 
+                onClick={() => handleDismissAlert(alert.id)}
+                style={{ 
+                  padding: '4px 8px', 
+                  background: 'transparent',
+                  border: '1px solid #faad14',
+                  borderRadius: '4px', 
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: '#faad14',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#faad14';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#faad14';
+                }}
+                title="アラートを消す"
+              >
+                <X size={14} />
+                消す
+              </button>
             </div>
           ))}
         </div>
